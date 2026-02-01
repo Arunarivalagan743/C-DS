@@ -1,0 +1,113 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+
+#define MAX 100
+
+// Stack for strings
+char stack[MAX][MAX];
+int top = -1;
+
+// Push to stack
+void push(char *str) {
+    if (top == MAX - 1) {
+        printf("Stack Overflow!\n");
+        return;
+    }
+    strcpy(stack[++top], str);
+}
+
+// Pop from stack
+char* pop() {
+    if (top == -1) {
+        return NULL;
+    }
+    return stack[top--];
+}
+
+// Check if stack is empty
+int isEmpty() {
+    return top == -1;
+}
+
+// Check if character is operator
+int isOperator(char c) {
+    return (c == '+' || c == '-' || c == '*' || c == '/' || c == '^' || c == '%');
+}
+
+// Convert Postfix to Infix
+void postfixToInfix(char *postfix, char *infix) {
+    int i = 0;
+    char c;
+    char operand[2];
+    char temp[MAX];
+    
+    // Reset stack
+    top = -1;
+    
+    while (postfix[i] != '\0') {
+        c = postfix[i];
+        
+        // Skip whitespace
+        if (c == ' ' || c == '\t') {
+            i++;
+            continue;
+        }
+        
+        // If operand, push to stack
+        if (isalnum(c)) {
+            operand[0] = c;
+            operand[1] = '\0';
+            push(operand);
+        }
+        // If operator
+        else if (isOperator(c)) {
+            if (top < 1) {
+                printf("Invalid expression!\n");
+                strcpy(infix, "Error");
+                return;
+            }
+            
+            char *op2 = pop();
+            char *op1 = pop();
+            
+            // Create: (op1 operator op2)
+            sprintf(temp, "(%s%c%s)", op1, c, op2);
+            push(temp);
+        }
+        
+        i++;
+    }
+    
+    if (top == 0) {
+        strcpy(infix, stack[top]);
+    } else {
+        printf("Invalid expression!\n");
+        strcpy(infix, "Error");
+    }
+}
+
+int main() {
+    char postfix[MAX], infix[MAX];
+    
+    printf("=== POSTFIX TO INFIX CONVERSION ===\n\n");
+    
+    while (1) {
+        printf("Enter postfix expression (or 'exit' to quit): ");
+        fgets(postfix, MAX, stdin);
+        postfix[strcspn(postfix, "\n")] = '\0';
+        
+        if (strcmp(postfix, "exit") == 0) {
+            printf("Exiting...\n");
+            break;
+        }
+        
+        postfixToInfix(postfix, infix);
+        
+        printf("Postfix: %s\n", postfix);
+        printf("Infix:   %s\n\n", infix);
+    }
+    
+    return 0;
+}
